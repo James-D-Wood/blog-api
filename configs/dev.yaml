@@ -1,0 +1,11 @@
+# TODO: this is a sample starting point - update as we code
+
+logging: 
+  level: debug
+
+database:
+  host: localhost
+  user: postgres
+  password: postgres
+  database: postgres
+  port: 5432
