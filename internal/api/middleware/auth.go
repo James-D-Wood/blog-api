@@ -1,18 +1,53 @@
 package middleware
 
-// TODO: implement auth middleware
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"net/http"
 
-// type ContextKey string
+	"github.com/James-D-Wood/blog-api/internal/httputils"
+)
 
-// const (
-// 	LoggerKey ContextKey = "logger"
-// )
+const (
+	UserIDKey ContextKey = "user_id"
+	AdminKey  ContextKey = "is_admin"
+)
 
-// // AuthMiddleware rejects requests for users that are not properly authenticated
-// func AuthMiddleware(next http.Handler, logger *slog.Logger) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		logger.Info(fmt.Sprintf("%s %s", r.Method, r.URL))
-// 		ctx := context.WithValue(r.Context(), LoggerKey, logger)
-// 		next.ServeHTTP(w, r.WithContext(ctx))
-// 	})
-// }
+// AuthMiddleware verifies the user is valid and passes the auth claims on in the context
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// TODO: this should be more durable
+		logger, _ := r.Context().Value(LoggerKey).(*slog.Logger)
+
+		// hacky way to declare which paths to bypass
+		excludedPaths := map[string]bool{
+			"/api/v1/login": true,
+		}
+
+		ctx := r.Context()
+
+		// verify auth token and reject request if user ID cannot be established
+		if _, ok := excludedPaths[r.URL.Path]; !ok {
+			token, err := httputils.DecodeBearerAuth(r)
+			if err != nil {
+				logger.Error(fmt.Sprintf("could not authenticate user: %s", err))
+				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
+				return
+			}
+
+			var claims httputils.AuthClaims
+			err = httputils.ExtractJWTClaims(token, &claims)
+			if err != nil {
+				logger.Error(fmt.Sprintf("could not authenticate user: %s", err))
+				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
+				return
+			}
+
+			ctx = context.WithValue(ctx, UserIDKey, claims.UserID)
+			ctx = context.WithValue(ctx, AdminKey, claims.IsAdmin)
+		}
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}

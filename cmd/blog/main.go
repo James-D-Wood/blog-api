@@ -12,9 +12,7 @@ import (
 )
 
 func main() {
-	// read in config
-
-	// set up DB connection
+	// TODO: read in config using viper
 
 	// set up logger
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -25,6 +23,7 @@ func main() {
 	if nodb != "" {
 		blogSvc = &db.InMemoryBlogService{}
 	} else {
+		// set up DB connection
 		panic("db not implemented")
 	}
 
@@ -38,6 +37,9 @@ func main() {
 
 	// set up routing
 	m := app.RegisterRoutes()
+
+	// apply middleware
+	m = middleware.AuthMiddleware(m)
 	m = middleware.LoggerMiddleware(m, app.Logger)
 
 	// simple server setup for local testing

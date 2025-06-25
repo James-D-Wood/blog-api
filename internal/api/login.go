@@ -1,56 +1,30 @@
 package api
 
 import (
-	"encoding/base64"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
-	"strings"
+
+	"github.com/James-D-Wood/blog-api/internal/httputils"
 )
 
 type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-func decodeBasicAuth(r *http.Request) (username, password string, err error) {
-	header := r.Header.Get("Authorization")
-	if header == "" {
-		return "", "", errors.New("no Authorization header provided")
-	}
-
-	if !strings.Contains(header, "Basic ") {
-		return "", "", errors.New("basic auth not detected")
-	}
-
-	b64String := strings.Trim(header, "Basic ")
-	b, err := base64.StdEncoding.DecodeString(b64String)
-	if err != nil {
-		return "", "", fmt.Errorf("problem decoding auth header: %s", err)
-	}
-
-	components := strings.Split(string(b), ":")
-	if len(components) != 2 {
-		return "", "", fmt.Errorf("found %d components in basic auth header - expected 2", len(components))
-	}
-
-	return components[0], components[1], nil
-}
-
-// TODO: add error response bodies
 func (app *App) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	user, pass, err := decodeBasicAuth(r)
+	user, pass, err := httputils.DecodeBasicAuth(r)
 	if err != nil {
 		app.Logger.Error(err.Error())
-		w.WriteHeader(401)
+		httputils.RespondWithJsonError(w, "malformatted auth header", 401)
 		return
 	}
 
+	// fake login based on mock user list
 	token, err := app.UserService.AuthenticateUser(user, pass)
 	if err != nil {
 		// return
 		app.Logger.Error(err.Error())
-		w.WriteHeader(401)
+		httputils.RespondWithJsonError(w, "user does not exist or wrong password provided", 401)
 		return
 	}
 
@@ -60,7 +34,7 @@ func (app *App) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(resp)
 	if err != nil {
-		w.WriteHeader(500)
+		httputils.RespondWithJsonError(w, "internal error processing request", 500)
 		return
 	}
 
