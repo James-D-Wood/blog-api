@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -32,7 +31,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if _, ok := excludedPaths[r.URL.Path]; !ok {
 			token, err := httputils.DecodeBearerAuth(r)
 			if err != nil {
-				logger.Error(fmt.Sprintf("could not authenticate user: %s", err))
+				logger.Error("AuthMiddleware: could not authenticate user", "error", err)
 				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
 				return
 			}
@@ -40,7 +39,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			var claims httputils.AuthClaims
 			err = httputils.ExtractJWTClaims(token, &claims)
 			if err != nil {
-				logger.Error(fmt.Sprintf("could not authenticate user: %s", err))
+				logger.Error("AuthMiddleware: could not authenticate user", "error", err)
 				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
 				return
 			}
