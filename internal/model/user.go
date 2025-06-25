@@ -1,11 +1,9 @@
 package model
 
 import (
+	"github.com/James-D-Wood/blog-api/internal/httputils"
 	"github.com/golang-jwt/jwt/v5"
 )
-
-// this is insecure - ideally this secret should be managed by another secret management service
-var HMACSecret = []byte("7e59e2c4-51a1-11f0-a636-de64e30f34bb")
 
 type User struct {
 	ID       string
@@ -24,5 +22,5 @@ func (user *User) GenerateJWT() (string, error) {
 		},
 	)
 
-	return token.SignedString(HMACSecret)
+	return token.SignedString(httputils.HMACSecret)
 }
