@@ -504,10 +504,8 @@ This JWT token will be central to my authentication and authorization strategy f
 
 ```json
 {
-  "sub": "1234567890",
   "user_id": "1ecaf3dc-db60-468e-a404-04b7a7d521c1", // establish user identity
   "is_admin": true, // makes a claim about user authorization level
-  "iat": 1516239022
 }
 ```
 
