@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/James-D-Wood/blog-api/internal/db"
 	"github.com/James-D-Wood/blog-api/internal/httputils"
 	"github.com/James-D-Wood/blog-api/internal/model"
 )
@@ -79,10 +80,17 @@ func (app *App) CreateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = app.BlogService.CreateBlogPost(r.Context(), userID, &post)
 	if err != nil {
-		// TODO: typed errors for better client responses
-		app.Logger.Error("failed to persist blog post", "error", err, "location", "CreateBlogPostHandler")
-		httputils.RespondWithJsonError(w, "internal service error", 400)
-		return
+		switch err {
+		case db.ErrBlogPostAlreadyExists:
+			app.Logger.Error("failed to persist blog post", "error", err, "location", "CreateBlogPostHandler")
+			httputils.RespondWithJsonError(w, "cannot create blog post - resource already exists", 400)
+			return
+		default:
+			app.Logger.Error("failed to persist blog post", "error", err, "location", "CreateBlogPostHandler")
+			httputils.RespondWithJsonError(w, "internal service error", 500)
+			return
+		}
+
 	}
 
 	type Response struct {

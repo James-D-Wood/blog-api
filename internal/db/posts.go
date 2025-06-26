@@ -11,7 +11,8 @@ import (
 // TODO: database implementation of BlogService interface
 
 var (
-	ErrEntityNotFound = errors.New("entity not found")
+	ErrEntityNotFound        = errors.New("entity not found")
+	ErrBlogPostAlreadyExists = errors.New("blog post already exists")
 )
 
 type BlogService interface {
@@ -61,7 +62,7 @@ func (s *InMemoryBlogService) CreateBlogPost(ctx context.Context, userID string,
 	// check that blog does not already exist
 	for _, p := range s.m {
 		if p.AuthorID == post.AuthorID && p.Title == post.Title {
-			return errors.New("blog post already exists")
+			return ErrBlogPostAlreadyExists
 		}
 	}
 
