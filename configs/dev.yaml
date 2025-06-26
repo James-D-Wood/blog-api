@@ -1,11 +1,12 @@
-# TODO: this is a sample starting point - update as we code
+# not yet in use
+# this file would allow us to configure the service by environment
 
 logging: 
   level: debug
 
 database:
-  host: localhost
-  user: postgres
-  password: postgres
-  database: postgres
+  host: db
+  user: dbuser
+  password: dbpassword # should be handled in separate secret store
+  database: blog
   port: 5432
