@@ -15,8 +15,8 @@ import (
 var HMACSecret = []byte("7e59e2c4-51a1-11f0-a636-de64e30f34bb")
 
 type AuthClaims struct {
-	UserID  string
-	IsAdmin bool
+	UserID  string `json:"user_id"`
+	IsAdmin bool   `json:"is_admin"`
 }
 
 func DecodeBasicAuth(r *http.Request) (username, password string, err error) {

@@ -15,13 +15,15 @@ func main() {
 	// TODO: read in config using viper
 
 	// set up logger
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := slog.New(
+		slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+	)
 
 	// set up app
 	var blogSvc db.BlogService
 	nodb := os.Getenv("NODB")
 	if nodb != "" {
-		blogSvc = &db.InMemoryBlogService{}
+		blogSvc = db.NewInMemoryBlogService()
 	} else {
 		// set up DB connection
 		panic("db not implemented")
