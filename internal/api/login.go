@@ -14,7 +14,7 @@ type LoginResponse struct {
 func (app *App) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	user, pass, err := httputils.DecodeBasicAuth(r)
 	if err != nil {
-		app.Logger.Error("LoginHandler: failed to decode basic auth", "error", err)
+		app.Logger.Error("failed to decode basic auth", "error", err, "location", "LoginHandler")
 		httputils.RespondWithJsonError(w, "malformatted auth header", 401)
 		return
 	}
@@ -23,7 +23,7 @@ func (app *App) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	token, err := app.UserService.AuthenticateUser(user, pass)
 	if err != nil {
 		// return
-		app.Logger.Error("LoginHandler: failed to authenticate user", "error", err)
+		app.Logger.Error("failed to authenticate user", "error", err, "location", "LoginHandler")
 		httputils.RespondWithJsonError(w, "user does not exist or wrong password provided", 401)
 		return
 	}

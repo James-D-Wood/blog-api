@@ -27,7 +27,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if _, ok := excludedPaths[r.URL.Path]; !ok {
 			token, err := httputils.DecodeBearerAuth(r)
 			if err != nil {
-				logger.Error("AuthMiddleware: could not authenticate user", "error", err)
+				logger.Error("could not authenticate user", "error", err, "location", "AuthMiddleware")
 				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
 				return
 			}
@@ -35,12 +35,12 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			var claims httputils.AuthClaims
 			err = httputils.ExtractJWTClaims(token, &claims)
 			if err != nil {
-				logger.Error("AuthMiddleware: could not authenticate user", "error", err)
+				logger.Error("could not authenticate user", "error", err, "location", "AuthMiddleware")
 				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
 				return
 			}
 			if claims.UserID == "" {
-				logger.Error("AuthMiddleware: user ID came out empty")
+				logger.Error("user ID came out empty", "location", "AuthMiddleware")
 				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
 				return
 			}

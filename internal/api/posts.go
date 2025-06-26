@@ -14,7 +14,7 @@ func (app *App) FetchBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("id")
 	post, err := app.BlogService.FetchBlogPost(r.Context(), postID)
 	if err != nil {
-		app.Logger.Error("FetchBlogPostHandler: failed to fetch blog post", "error", err)
+		app.Logger.Error("failed to fetch blog post", "error", err, "location", "FetchBlogPostHandler")
 		httputils.RespondWithJsonError(w, "failed to fetch blog post", 404)
 		return
 	}
@@ -31,7 +31,7 @@ func (app *App) FetchBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 func (app *App) FetchBlogPostsHandler(w http.ResponseWriter, r *http.Request) {
 	posts, err := app.BlogService.FetchPublishedBlogPosts(r.Context())
 	if err != nil {
-		app.Logger.Error("FetchBlogPostsHandler: failed to fetch blogs", "error", err)
+		app.Logger.Error("failed to fetch blogs", "error", err, "location", "FetchBlogPostsHandler")
 		httputils.RespondWithJsonError(w, "failed to fetch blogs", 500)
 		return
 	}
@@ -51,7 +51,7 @@ func (app *App) CreateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 	var post model.BlogPost
 	err := json.NewDecoder(r.Body).Decode(&post)
 	if err != nil {
-		app.Logger.Error("CreateBlogPostHandler: failed to read blog post payload", "error", err)
+		app.Logger.Error("failed to read blog post payload", "error", err, "location", "CreateBlogPostHandler")
 		httputils.RespondWithJsonError(w, "invalid request body", 400)
 		return
 	}
@@ -59,7 +59,7 @@ func (app *App) CreateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 	err = app.BlogService.CreateBlogPost(r.Context(), &post)
 	if err != nil {
 		// TODO: typed errors for better client responses
-		app.Logger.Error("CreateBlogPostHandler: failed to persist blog post", "error", err)
+		app.Logger.Error("failed to persist blog post", "error", err, "location", "CreateBlogPostHandler")
 		httputils.RespondWithJsonError(w, "internal service error", 400)
 		return
 	}
