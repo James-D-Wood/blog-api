@@ -55,11 +55,11 @@ more than 4 hours on it.
 ├── db                    # setup files to run PostgreSQL locally (integration incomplete)
 │   ├── Dockerfile
 │   └── seed.sql
-├── docker-compose.yml 
+├── docker-compose.yml
 ├── docs
 ├── go.mod
 ├── go.sum
-├── internal  
+├── internal
 │   ├── api               # middleware, router and handlers for the HTTP requests
 │   │   ├── api.go
 │   │   ├── login.go
@@ -83,7 +83,12 @@ more than 4 hours on it.
 
 ## Running this project
 
-### Run Tests 
+The `Makefile` is the entrypoint I am using to run the application. There are two flavors of the application I would like to support:
+
+- `local` - for building and running the service with only mock dependencies
+- `integration` - for spinning up docker containers for the service and any dependencies (ie: PostgreSQL)
+
+### Run Tests
 
 ```sh
 make test
@@ -92,16 +97,16 @@ make test
 ### Build and Run Locally w/ In-Memory Data Store Implementation
 
 ```sh
-make run-mocked
+make run-local
 ```
 
 ### Using Docker Compose and Postgres DB Implementation
 
 ```sh
-make run
+make run-integration
 ```
 
-NOTE: I did not have time to complete the SQL integration, so the Docker compose version is also using the in-memory data store. 
+NOTE: I did not have time to complete the SQL integration, so the Docker compose version is also using the in-memory data store.
 
 ### Test Requests
 
@@ -128,7 +133,9 @@ My user data model contains one field to indicate authorization (`is_admin`) but
 
 ### Storage Concerns
 
-Most of the information this API needs to store and retieve are basic metadata fields. The article title, author name, and description can all be represented by relatively short text fields. For the sake of time, I am going to use PostgreSQL to set up users and relationships due to my familiarity with the technology. Arguably, depending on how this information could be modelled as unstructured data in a NoSQL DB technology, especially is the articles themselves required a JSON structure to model rich text or formatting declarations.
+Most of the information this API needs to store and retrieve are basic metadata fields. The article title, author name, and description can all be represented by relatively short text fields. For the sake of time, I aimed to use PostgreSQL to set up users and relationships due to my familiarity with the technology.
+
+I started by writing an interface for my persistence layer and an in-memory data store as a first pass to model the blog CRUD functionality. I like to start with an implementation like this because it helps me quickly sketch out a working implementation and can be repurposed as a test double for unit tests.
 
 ## Tradeoffs and Limitations
 
@@ -140,9 +147,11 @@ My service is supporting only a simple title, byline and text blob as a blog pos
 - **Markdown** - This may be a nice option if your author user base is already familiar with the syntax. The resulting text blob would be easily searchable and a module for rendering MD into HTML or a different presentation format would separate the presentation details from the raw text content. The limitation is that the feature set for editing would be limited to what Markdown syntax supports.
 - **JSON** - A JSON structure could be used to set up a custom set of directives / attributes for styling and is agnostic of any specific presentation format. The overhead here is setting up a client that knows how to convert what is in the editor into this proprietary structure and maintaining that API over time.
 
+Depending on the requirements and approach for how to model blog post content, different data storage approaches could be a better fit than the relational database. Using JSON for example may make a document-style NoSQL database more convenient. If multimedia is included as a feature, an object storage solution may be required.
+
 ### Editing History
 
-The data model I am proposing only supports a single snapshot of each blog. This will function well for a simple prototype, but in a full-fledged blog editing app I may want to support reviewing revisions. Similar to git, our service could support a log of revisions to capture the full history of the the blog post and offer authors more powerful tools for editing and reviewing the articles they are working on. This however, would require a more complex data model and more storage for each blog post.
+The data model I am proposing only supports a single snapshot of each blog. This will function well for a prototype, but in a full-fledged blog editing app may have a requirement to support reviewing revisions. Similar to git, our service could support a log of revisions to capture the full history of the the blog post and offer authors more powerful tools for editing and reviewing the articles they are working on. This however, would require a more complex data model and more storage for each blog post.
 
 ### Search Functionality
 
@@ -150,7 +159,7 @@ Another ideal feature as the dataset of blog posts grows is a means for performi
 
 ## Brainstorming - API Spec
 
-This is my "top-down" method for modeling the problem.
+To show a bit of my thought process and prework - this is my "top-down" approach to modeling the problem.
 
 ### Login
 
@@ -569,7 +578,7 @@ This JWT token will be central to my authentication and authorization strategy f
 ```json
 {
   "user_id": "1ecaf3dc-db60-468e-a404-04b7a7d521c1", // establish user identity
-  "is_admin": true, // makes a claim about user authorization level
+  "is_admin": true // makes a claim about user authorization level
 }
 ```
 
@@ -583,14 +592,15 @@ The following is the list of site users mocked for usage.
 | dsedaris  | emeraldIsle | false    |
 | admin     | password    | true     |
 
-
-Note: Password validation is not implemented. The auth service simply checks if the user exists and mocks out a JWT token representing the user and their permissions. 
+Note: Password validation is not implemented. The auth service simply checks if the user exists and mocks out a JWT token representing the user and their permissions.
 
 ## Given more time
 
 I ran into the time limitation for this build. Given more time, my next steps would be to:
+
 - use the Viper package to make the application config driven and load the appropriate DB based on the given config
 - create a SQL implementation of the `BlogService` interface in the `internal/db` package
 - integrate with the PostgreSQL instance in the docker compose set up
 - write more unit tests to help cover the main logic in the handlers
 - write integration tests to run against the docker compose version of the application to test the application from a "black box"/external perspective
+- an OpenAPI spec to document the API contract

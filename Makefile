@@ -11,8 +11,8 @@ test: build
 	go test ./...
 
 # offer a way to run without DB in case of dependency issue
-run-mocked: build
+run-local: build
 	NODB=true ./app
 
-run:
+run-integration:
 	docker compose up --build --force-recreate
