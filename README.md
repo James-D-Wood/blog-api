@@ -39,9 +39,73 @@ more than 4 hours on it.
   - Any tradeoffs or limitations
 - Optional: Example curl commands or Postman file
 
+## Project Structure
+
+```
+.
+├── Dockerfile
+├── Makefile
+├── README.md
+├── app
+├── cmd
+│   └── blog
+│       └── main.go       # entrypoint for the application
+├── configs               # config files to factorize the app for different environments (incomplete)
+│   └── dev.yaml
+├── db                    # setup files to run PostgreSQL locally (integration incomplete)
+│   ├── Dockerfile
+│   └── seed.sql
+├── docker-compose.yml 
+├── docs
+├── go.mod
+├── go.sum
+├── internal  
+│   ├── api               # middleware, router and handlers for the HTTP requests
+│   │   ├── api.go
+│   │   ├── login.go
+│   │   ├── middleware
+│   │   │   ├── auth.go
+│   │   │   └── log.go
+│   │   └── posts.go
+│   ├── constant
+│   │   └── constant.go
+│   ├── db                # interface for interacting with the persistence layer
+│   │   ├── posts.go
+│   │   └── user.go
+│   ├── httputils         # utility functions for various http request handling functionality
+│   │   ├── auth.go
+│   │   └── response.go
+│   └── model             # entity representations
+│       ├── post.go
+│       └── user.go
+└── pkg
+```
+
 ## Running this project
 
-TODO
+### Run Tests 
+
+```sh
+make test
+```
+
+### Build and Run Locally w/ In-Memory Data Store Implementation
+
+```sh
+make run-mocked
+```
+
+### Using Docker Compose and Postgres DB Implementation
+
+```sh
+make run
+```
+
+NOTE: I did not have time to complete the SQL integration, so the Docker compose version is also using the in-memory data store. 
+
+### Test Requests
+
+The Postman collection used to test this service and example manual test cases are attached in the `docs/` directory.
 
 ## Design Decisions
 
@@ -84,7 +148,7 @@ The data model I am proposing only supports a single snapshot of each blog. This
 
 Another ideal feature as the dataset of blog posts grows is a means for performing text or tag search against the blog posts. The current API only supports paginated search but from a UX standpoint a user would likely want to be able to filter for posts they are interested in.
 
-## API Spec
+## Brainstorming - API Spec
 
 This is my "top-down" method for modeling the problem.
 
@@ -463,7 +527,7 @@ Returned if:
 }
 ```
 
-## Data Model
+## Brainstorming - Data Model
 
 This is my "bottom-up" way of modelling the problem.
 
@@ -518,3 +582,15 @@ The following is the list of site users mocked for usage.
 | kishiguro | hailsham    | false    |
 | dsedaris  | emeraldIsle | false    |
 | admin     | password    | true     |
+
+
+Note: Password validation is not implemented. The auth service simply checks if the user exists and mocks out a JWT token representing the user and their permissions. 
+
+## Given more time
+
+I ran into the time limitation for this build. Given more time, my next steps would be to:
+- use the Viper package to make the application config driven and load the appropriate DB based on the given config
+- create a SQL implementation of the `BlogService` interface in the `internal/db` package
+- integrate with the PostgreSQL instance in the docker compose set up
+- write more unit tests to help cover the main logic in the handlers
+- write integration tests to run against the docker compose version of the application to test the application from a "black box"/external perspective
