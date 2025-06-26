@@ -21,9 +21,20 @@ func AuthProtectedMiddleware(next http.Handler) http.Handler {
 		// verify auth token and reject request if user ID cannot be established
 		token, err := httputils.DecodeBearerAuth(r)
 		if err != nil {
-			logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
-			httputils.RespondWithJsonError(w, "could not authenticate user", 401)
-			return
+			switch err {
+			case httputils.ErrAuthHeaderMissing:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user - Authorization header missing", 401)
+				return
+			case httputils.ErrNotBearerAuth:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user - wrong Authorization header type, use bearer", 401)
+				return
+			default:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
+				return
+			}
 		}
 
 		var claims httputils.AuthClaims
@@ -59,11 +70,23 @@ func AuthOptionalMiddleware(next http.Handler) http.Handler {
 		// verify if auth token is present
 		token, err := httputils.DecodeBearerAuth(r)
 		if err != nil {
-			logger.Debug("auth token not passed", "error", err, "location", "AuthOptionalMiddleware")
-			ctx = context.WithValue(ctx, constant.UserIDKey, "")
-			ctx = context.WithValue(ctx, constant.AdminKey, false)
-			next.ServeHTTP(w, r.WithContext(ctx))
-			return
+			switch err {
+			case httputils.ErrAuthHeaderMissing:
+				logger.Debug("auth token not passed", "location", "AuthOptionalMiddleware")
+				// default values
+				ctx = context.WithValue(ctx, constant.UserIDKey, "")
+				ctx = context.WithValue(ctx, constant.AdminKey, false)
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return
+			case httputils.ErrNotBearerAuth:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user - wrong Authorization header type, use bearer", 401)
+				return
+			default:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
+				return
+			}
 		}
 
 		var claims httputils.AuthClaims
@@ -99,9 +122,20 @@ func AdminOnlyMiddleware(next http.Handler) http.Handler {
 		// verify auth token and reject request if user ID cannot be established
 		token, err := httputils.DecodeBearerAuth(r)
 		if err != nil {
-			logger.Error("could not authenticate user", "error", err, "location", "AdminOnlyMiddleware")
-			httputils.RespondWithJsonError(w, "could not authenticate user", 401)
-			return
+			switch err {
+			case httputils.ErrAuthHeaderMissing:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user - Authorization header missing", 401)
+				return
+			case httputils.ErrNotBearerAuth:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user - wrong Authorization header type, use bearer", 401)
+				return
+			default:
+				logger.Error("could not authenticate user", "error", err, "location", "AuthProtectedMiddleware")
+				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
+				return
+			}
 		}
 
 		var claims httputils.AuthClaims

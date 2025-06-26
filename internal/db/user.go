@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	"github.com/James-D-Wood/blog-api/internal/httputils"
 	"github.com/James-D-Wood/blog-api/internal/model"
 	"github.com/google/uuid"
 )
@@ -36,7 +37,7 @@ var DefaultUserMap = map[string]*model.User{
 }
 
 func assignUUID() string {
-	i, _ := uuid.NewUUID()
+	i, _ := uuid.NewV7()
 	return i.String()
 }
 
@@ -60,7 +61,7 @@ func (s *InMemoryUserService) AuthenticateUser(username, password string) (strin
 		return "", fmt.Errorf("error authenticating user: %s", err)
 	}
 
-	token, err := user.GenerateJWT()
+	token, err := httputils.GenerateJWT(user)
 	if err != nil {
 		return "", fmt.Errorf("error generating JWT for user: %s", err)
 	}
