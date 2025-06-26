@@ -12,7 +12,7 @@ import (
 
 func (app *App) FetchBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("id")
-	post, err := app.BlogService.FetchBlog(r.Context(), postID)
+	post, err := app.BlogService.FetchBlogPost(r.Context(), postID)
 	if err != nil {
 		app.Logger.Error("FetchBlogPostHandler: failed to fetch blog post", "error", err)
 		httputils.RespondWithJsonError(w, "failed to fetch blog post", 404)
@@ -29,7 +29,7 @@ func (app *App) FetchBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) FetchBlogPostsHandler(w http.ResponseWriter, r *http.Request) {
-	posts, err := app.BlogService.FetchPublishedBlogs(r.Context())
+	posts, err := app.BlogService.FetchPublishedBlogPosts(r.Context())
 	if err != nil {
 		app.Logger.Error("FetchBlogPostsHandler: failed to fetch blogs", "error", err)
 		httputils.RespondWithJsonError(w, "failed to fetch blogs", 500)
@@ -56,7 +56,7 @@ func (app *App) CreateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.BlogService.CreateBlog(r.Context(), &post)
+	err = app.BlogService.CreateBlogPost(r.Context(), &post)
 	if err != nil {
 		// TODO: typed errors for better client responses
 		app.Logger.Error("CreateBlogPostHandler: failed to persist blog post", "error", err)
