@@ -5,12 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/James-D-Wood/blog-api/internal/constant"
 	"github.com/James-D-Wood/blog-api/internal/httputils"
-)
-
-const (
-	UserIDKey ContextKey = "user_id"
-	AdminKey  ContextKey = "is_admin"
 )
 
 // AuthMiddleware verifies the user is valid and passes the auth claims on in the context
@@ -18,7 +14,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// TODO: this should be more durable
-		logger, _ := r.Context().Value(LoggerKey).(*slog.Logger)
+		logger, _ := r.Context().Value(constant.LoggerKey).(*slog.Logger)
 
 		// hacky way to declare which paths to bypass
 		excludedPaths := map[string]bool{
@@ -43,9 +39,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
 				return
 			}
+			if claims.UserID == "" {
+				logger.Error("AuthMiddleware: user ID came out empty")
+				httputils.RespondWithJsonError(w, "could not authenticate user", 401)
+				return
+			}
+			logger.Debug("claims extracted from auth JWT", "claims", claims)
 
-			ctx = context.WithValue(ctx, UserIDKey, claims.UserID)
-			ctx = context.WithValue(ctx, AdminKey, claims.IsAdmin)
+			ctx = context.WithValue(ctx, constant.UserIDKey, claims.UserID)
+			ctx = context.WithValue(ctx, constant.AdminKey, claims.IsAdmin)
 		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
