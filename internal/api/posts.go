@@ -40,7 +40,7 @@ func (app *App) FetchBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	httputils.RespondWithJson(w, Response{
 		Post: post,
-	})
+	}, 200)
 }
 
 func (app *App) FetchBlogPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +57,7 @@ func (app *App) FetchBlogPostsHandler(w http.ResponseWriter, r *http.Request) {
 
 	httputils.RespondWithJson(w, Response{
 		Posts: posts,
-	})
+	}, 200)
 }
 
 func (app *App) CreateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +99,7 @@ func (app *App) CreateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	httputils.RespondWithJson(w, Response{
 		Post: post,
-	})
+	}, 201)
 }
 
 func (app *App) UpdateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +118,7 @@ func (app *App) UpdateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 	storedPost, err := app.BlogService.FetchBlogPost(r.Context(), postID)
 	if err != nil {
 		app.Logger.Error("blog post for given ID does not exist", "error", err, "location", "UpdateBlogPostHandler")
-		httputils.RespondWithJsonError(w, fmt.Sprintf("invalid request: blog post with ID %s does not exist", postID), 400)
+		httputils.RespondWithJsonError(w, fmt.Sprintf("invalid request: blog post with ID %s does not exist", postID), 404)
 		return
 	}
 
@@ -150,7 +150,7 @@ func (app *App) UpdateBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	httputils.RespondWithJson(w, Response{
 		Post: storedPost,
-	})
+	}, 200)
 }
 
 func (app *App) DeleteBlogPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -159,7 +159,7 @@ func (app *App) DeleteBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 	storedPost, err := app.BlogService.FetchBlogPost(r.Context(), postID)
 	if err != nil {
 		app.Logger.Error("blog post for given ID does not exist", "error", err, "location", "DeleteBlogPostHandler")
-		httputils.RespondWithJsonError(w, fmt.Sprintf("invalid request: blog post with ID %s does not exist", postID), 400)
+		httputils.RespondWithJsonError(w, fmt.Sprintf("invalid request: blog post with ID %s does not exist", postID), 404)
 		return
 	}
 
@@ -185,7 +185,7 @@ func (app *App) DeleteBlogPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	httputils.RespondWithJson(w, Response{
 		PostID: postID,
-	})
+	}, 204)
 }
 
 func (app *App) AdminDeleteBlogPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +194,7 @@ func (app *App) AdminDeleteBlogPostHandler(w http.ResponseWriter, r *http.Reques
 	_, err := app.BlogService.FetchBlogPost(r.Context(), postID)
 	if err != nil {
 		app.Logger.Error("blog post for given ID does not exist", "error", err, "location", "AdminDeleteBlogPostHandler")
-		httputils.RespondWithJsonError(w, fmt.Sprintf("invalid request: blog post with ID %s does not exist", postID), 400)
+		httputils.RespondWithJsonError(w, fmt.Sprintf("invalid request: blog post with ID %s does not exist", postID), 404)
 		return
 	}
 
@@ -206,5 +206,5 @@ func (app *App) AdminDeleteBlogPostHandler(w http.ResponseWriter, r *http.Reques
 
 	httputils.RespondWithJson(w, Response{
 		PostID: postID,
-	})
+	}, 204)
 }

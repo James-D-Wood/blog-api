@@ -19,11 +19,12 @@ func RespondWithJsonError(w http.ResponseWriter, message string, code int) {
 	w.Write(respBytes)
 }
 
-func RespondWithJson(w http.ResponseWriter, body any) {
+func RespondWithJson(w http.ResponseWriter, body any, code int) {
 	respBytes, err := json.Marshal(body)
 	if err != nil {
 		panic(err)
 	}
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
 	w.Write(respBytes)
 }
