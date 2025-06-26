@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -12,7 +11,7 @@ import (
 // LoggerMiddleware logs each request and adds logger to context
 func LoggerMiddleware(next http.Handler, logger *slog.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Info(fmt.Sprintf("%s %s", r.Method, r.URL))
+		logger.Info("receiving request", "method", r.Method, "path", r.URL.Path)
 		ctx := context.WithValue(r.Context(), constant.LoggerKey, logger)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
