@@ -41,7 +41,6 @@ func main() {
 	m := app.RegisterRoutes()
 
 	// apply middleware
-	m = middleware.AuthMiddleware(m)
 	m = middleware.LoggerMiddleware(m, app.Logger)
 
 	// simple server setup for local testing

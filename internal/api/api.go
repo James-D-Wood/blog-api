@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/James-D-Wood/blog-api/internal/api/middleware"
 	"github.com/James-D-Wood/blog-api/internal/db"
 )
 
@@ -23,14 +24,14 @@ func (app *App) RegisterRoutes() http.Handler {
 	apiV1.HandleFunc("POST /login", app.LoginHandler)
 
 	// blog posts
-	apiV1.HandleFunc("POST /posts", app.CreateBlogPostHandler)
-	apiV1.HandleFunc("GET /posts/{id}", app.FetchBlogPostHandler)
-	apiV1.HandleFunc("GET /posts", app.FetchBlogPostsHandler)
-	apiV1.HandleFunc("PUT /posts/{id}", app.UpdateBlogPostHandler)
-	apiV1.HandleFunc("DELETE /posts/{id}", app.DeleteBlogPostHandler)
+	apiV1.Handle("POST /posts", middleware.AuthProtectedMiddleware(http.HandlerFunc(app.CreateBlogPostHandler)))
+	apiV1.Handle("GET /posts/{id}", middleware.AuthOptionalMiddleware(http.HandlerFunc(app.FetchBlogPostHandler)))
+	apiV1.Handle("GET /posts", middleware.AuthOptionalMiddleware(http.HandlerFunc(app.FetchBlogPostsHandler)))
+	apiV1.Handle("PUT /posts/{id}", middleware.AuthProtectedMiddleware(http.HandlerFunc(app.UpdateBlogPostHandler)))
+	apiV1.Handle("DELETE /posts/{id}", middleware.AuthProtectedMiddleware(http.HandlerFunc(app.DeleteBlogPostHandler)))
 
 	// admin
-	apiV1.HandleFunc("DELETE /admin/posts/{id}", app.AdminDeleteBlogPostHandler)
+	apiV1.Handle("DELETE /admin/posts/{id}", middleware.AdminOnlyMiddleware(http.HandlerFunc(app.AdminDeleteBlogPostHandler)))
 
 	// top level mux
 	m := http.NewServeMux()

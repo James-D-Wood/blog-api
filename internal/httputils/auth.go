@@ -1,6 +1,7 @@
 package httputils
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/James-D-Wood/blog-api/internal/constant"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -81,4 +83,12 @@ func ExtractJWTClaims(token string, claims any) error {
 	}
 
 	return nil
+}
+
+func GetUserFromContext(ctx context.Context) (user string, err error) {
+	userID, ok := ctx.Value(constant.UserIDKey).(string)
+	if !ok {
+		return "", errors.New("could not determine user from context")
+	}
+	return userID, nil
 }
