@@ -12,7 +12,7 @@ test: build
 
 # offer a way to run without DB in case of dependency issue
 run-local: build
-	NODB=true ./app
+	ENV=dev ./app
 
 run-integration:
 	docker compose up --build --force-recreate
